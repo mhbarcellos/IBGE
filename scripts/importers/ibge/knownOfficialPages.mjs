@@ -1,0 +1,86 @@
+export const knownOfficialPages = [
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
+    year: 2025,
+    roleHint: 'Processo Seletivo Simplificado IBGE 2025',
+    url: 'https://conhecimento.fgv.br/concursos/pssibge25',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
+    year: 2025,
+    roleHint: 'Processo Seletivo Simplificado IBGE 2025',
+    url: 'https://conhecimento.fgv.br/concursos/pssibge25/4',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
+    year: 2025,
+    roleHint: 'Processo Seletivo Simplificado IBGE 2025',
+    url: 'https://conhecimento.fgv.br/concursos/pssibge25/5',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
+    year: 2021,
+    roleHint: 'Processo Seletivo Simplificado IBGE 2021',
+    url: 'https://conhecimento.fgv.br/concursos/ibgepss21',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
+    year: null,
+    roleHint: 'Concurso IBGE',
+    url: 'https://conhecimento.fgv.br/concursos/ibge',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'IBFC IBGE',
+    board: 'IBFC',
+    year: null,
+    roleHint: 'Concurso IBGE',
+    url: 'https://concursos.ibfc.org.br/informacoes/426/',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'Cebraspe IBGE',
+    board: 'Cebraspe',
+    year: 2021,
+    roleHint: 'Supervisor de Coleta e Qualidade',
+    url: 'https://www.cebraspe.org.br/concursos/ibge_21_pss_scq',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'Cebraspe IBGE',
+    board: 'Cebraspe',
+    year: 2021,
+    roleHint: 'Agente de Pesquisas e Mapeamento',
+    url: 'https://www.cebraspe.org.br/concursos/ibge_21_pss_apm',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'Cebraspe IBGE',
+    board: 'Cebraspe',
+    year: 2021,
+    roleHint: 'Processo Seletivo Simplificado IBGE',
+    url: 'https://www.cebraspe.org.br/concursos/ibge_21_pss',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'IBGE Trabalhe Conosco',
+    board: 'IBGE',
+    year: null,
+    roleHint: 'Trabalhe Conosco',
+    url: 'https://www.ibge.gov.br/acesso-informacao/institucional/trabalhe-conosco.html',
+    sourceType: 'official_index',
+  },
+];
+
+export function getKnownPagesBySource(sourceName) {
+  return knownOfficialPages.filter((page) => page.sourceName === sourceName);
+}
