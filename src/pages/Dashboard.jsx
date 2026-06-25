@@ -5,20 +5,44 @@ import Loading from '../components/Loading.jsx';
 import StatCard from '../components/StatCard.jsx';
 import { useAuth } from '../context/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient.js';
 import { getPerformanceSummary } from '../services/performanceService.js';
+import { getQuestionFilterOptions } from '../services/questionService.js';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { isAdmin } = useProfile();
   const [summary, setSummary] = useState(null);
+  const [availableQuestions, setAvailableQuestions] = useState(0);
+  const [adminStats, setAdminStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getPerformanceSummary(user?.id).then(({ data }) => {
-      setSummary(data);
+    Promise.all([
+      getPerformanceSummary(user?.id),
+      getQuestionFilterOptions({ includePendingReview: false }),
+    ]).then(async ([summaryResult, optionsResult]) => {
+      setSummary(summaryResult.data);
+      setAvailableQuestions(optionsResult.data?.count ?? 0);
+
+      if (isAdmin && isSupabaseConfigured) {
+        const [questionsResult, filesResult, reviewResult] = await Promise.all([
+          supabase.from('questions').select('*', { count: 'exact', head: true }),
+          supabase.from('exam_files').select('*', { count: 'exact', head: true }),
+          supabase.from('questions').select('*', { count: 'exact', head: true }).eq('needs_review', true),
+        ]);
+        setAdminStats({
+          questions: questionsResult.count ?? 0,
+          files: filesResult.count ?? 0,
+          review: reviewResult.count ?? 0,
+        });
+      } else {
+        setAdminStats(null);
+      }
+
       setLoading(false);
     });
-  }, [user?.id]);
+  }, [isAdmin, user?.id]);
 
   if (loading) return <Loading />;
 
@@ -36,9 +60,10 @@ export default function Dashboard() {
       ) : null}
 
       <div className="stats-grid">
-        <StatCard label="Questoes respondidas" value={summary.total} />
+        <StatCard label="Questões respondidas" value={summary.total} />
         <StatCard label="Acertos" value={summary.correct} />
         <StatCard label="Aproveitamento" value={`${summary.percent}%`} />
+        <StatCard label="Questões disponíveis" value={availableQuestions} />
         <StatCard label="Assunto mais errado" value={summary.subjectMostWrong} />
         <StatCard label="Melhor disciplina" value={summary.bestDiscipline} />
       </div>
@@ -74,7 +99,14 @@ export default function Dashboard() {
 
       {isAdmin ? (
         <article className="table-card">
-          <h2>Area administrativa</h2>
+          <h2>Área administrativa</h2>
+          {adminStats ? (
+            <div className="stats-grid compact">
+              <div><strong>{adminStats.questions}</strong><span>Questões importadas</span></div>
+              <div><strong>{adminStats.files}</strong><span>Arquivos importados</span></div>
+              <div><strong>{adminStats.review}</strong><span>Pendências de revisão</span></div>
+            </div>
+          ) : null}
           <div className="button-row">
             <Link className="button-link secondary-link" to="/importacao-automatica">Importacao automatica</Link>
             <Link className="button-link secondary-link" to="/revisao-questoes">Revisao</Link>

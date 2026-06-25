@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
 import AdminRoute from './components/AdminRoute.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -19,9 +20,18 @@ import RevisaoQuestoes from './pages/RevisaoQuestoes.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 
 function AppShell({ children }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div className="app-shell">
-      <Navbar />
+    <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
+      <header className="mobile-app-header">
+        <strong>IBGE Estudos</strong>
+        <button aria-label="Abrir menu" className="menu-toggle" type="button" onClick={() => setMenuOpen(true)}>
+          Menu
+        </button>
+      </header>
+      <button aria-label="Fechar menu" className="sidebar-backdrop" type="button" onClick={() => setMenuOpen(false)} />
+      <Navbar onNavigate={() => setMenuOpen(false)} />
       <main className="page">{children}</main>
     </div>
   );

@@ -35,9 +35,26 @@ export default function Landing() {
         </article>
         <article>
           <h2>Provas oficiais</h2>
-          <p>Use questoes importadas de provas oficiais quando disponiveis.</p>
+          <p>Use questões importadas de provas oficiais quando disponíveis.</p>
         </article>
       </section>
+      <section className="landing-benefits">
+        <article>
+          <h2>Como funciona</h2>
+          <p>Crie sua conta, escolha uma disciplina, pratique questões e acompanhe seu desempenho ao longo do tempo.</p>
+        </article>
+        <article>
+          <h2>Estudo individual</h2>
+          <p>Cada usuário tem histórico, acertos e erros separados. Seu desempenho é privado.</p>
+        </article>
+        <article>
+          <h2>Curadoria</h2>
+          <p>Administradores revisam importações, questões e materiais para manter o banco organizado.</p>
+        </article>
+      </section>
+      <footer className="public-footer">
+        IBGE Estudos. Plataforma independente de estudos. Não é site oficial do IBGE. {new Date().getFullYear()}
+      </footer>
     </main>
   );
 }
