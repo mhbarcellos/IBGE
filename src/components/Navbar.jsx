@@ -1,27 +1,30 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle.jsx';
 import { useAuth } from '../context/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
 
-const links = [
+const studyLinks = [
   { to: '/dashboard', label: 'Dashboard' },
-  { to: '/provas', label: 'Provas' },
-  { to: '/questoes', label: 'Banco de Questões' },
-  { to: '/questionario', label: 'Praticar' },
   { to: '/trilha', label: 'Trilha de Estudos' },
+  { to: '/questionario', label: 'Praticar' },
   { to: '/simulados', label: 'Simulados' },
   { to: '/revisao-erros', label: 'Revisão de Erros' },
-  { to: '/desempenho', label: 'Desempenho' },
+];
+
+const libraryLinks = [
+  { to: '/questoes', label: 'Banco de Questões' },
+  { to: '/provas', label: 'Provas' },
   { to: '/materiais', label: 'Materiais' },
 ];
 
 const accountLinks = [
+  { to: '/desempenho', label: 'Desempenho' },
   { to: '/perfil', label: 'Perfil' },
 ];
 
 const adminLinks = [
   { to: '/importacao-automatica', label: 'Importação automática' },
   { to: '/importacoes', label: 'Histórico de Importações' },
-  { to: '/importar-pdf', label: 'Importar PDF' },
   { to: '/revisao-questoes', label: 'Revisão' },
   { to: '/admin/questoes', label: 'Admin' },
 ];
@@ -45,8 +48,16 @@ export default function Navbar({ onNavigate }) {
       </div>
       <nav>
         <div className="nav-group">
-          <span className="nav-group-title">Estudo</span>
-          {links.map((link) => (
+          <span className="nav-group-title">Estudar</span>
+          {studyLinks.map((link) => (
+            <NavLink key={link.to} to={link.to} onClick={onNavigate}>
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+        <div className="nav-group">
+          <span className="nav-group-title">Biblioteca</span>
+          {libraryLinks.map((link) => (
             <NavLink key={link.to} to={link.to} onClick={onNavigate}>
               {link.label}
             </NavLink>
@@ -71,9 +82,12 @@ export default function Navbar({ onNavigate }) {
           </div>
         ) : null}
       </nav>
-      <button className="ghost-button" type="button" onClick={handleSignOut}>
-        Sair
-      </button>
+      <div className="sidebar-footer">
+        <ThemeToggle />
+        <button className="ghost-button" type="button" onClick={handleSignOut}>
+          Sair
+        </button>
+      </div>
     </aside>
   );
 }

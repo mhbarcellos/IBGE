@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useAuth } from '../context/useAuth.js';
 import { isSupabaseConfigured, supabaseConfigMessage } from '../lib/supabaseClient.js';
 import { resetPassword, signInWithPassword, signUp } from '../services/authService.js';
@@ -13,15 +14,12 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (session) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (session) return <Navigate to="/dashboard" replace />;
 
   async function handleAuth(mode) {
     setError('');
     setMessage('');
     setLoading(true);
-
     const result = mode === 'signup' ? await signUp(email, password) : await signInWithPassword(email, password);
     setLoading(false);
 
@@ -31,7 +29,7 @@ export default function Login() {
     }
 
     if (mode === 'signup' && !result.data?.session) {
-      setMessage('Conta criada. Verifique seu email se a confirmacao estiver ativa no Supabase.');
+      setMessage('Conta criada. Verifique seu e-mail se a confirmação estiver ativa no Supabase.');
       return;
     }
 
@@ -66,24 +64,27 @@ export default function Login() {
 
   return (
     <main className="login-page">
+      <div className="public-topbar">
+        <strong>IBGE Estudos</strong>
+        <ThemeToggle compact />
+      </div>
       <div className="login-shell">
         <section className="login-intro">
-          <span className="eyebrow">IBGE Estudos</span>
-          <h1>Entre no IBGE Estudos</h1>
-          <p>Treine com questões de concursos do IBGE, acompanhe seu desempenho e organize sua preparação.</p>
+          <span className="eyebrow">Acesso seguro</span>
+          <h1>Entre para continuar estudando</h1>
+          <p>Seu progresso, simulados e revisão de erros ficam salvos na sua conta.</p>
           <ul className="login-benefits">
-            <li>Banco de questões</li>
             <li>Prática com feedback</li>
-            <li>Desempenho individual</li>
-            <li>Materiais de estudo</li>
+            <li>Revisão de erros</li>
+            <li>Simulados rápidos</li>
           </ul>
         </section>
 
         <section className="login-card">
           <div>
-            <span className="eyebrow">Acesso</span>
+            <span className="eyebrow">Login</span>
             <h1>Entrar</h1>
-            <p className="muted">Use sua conta para continuar estudando.</p>
+            <p className="muted">Use seu e-mail e senha para acessar a plataforma.</p>
           </div>
 
           {!isSupabaseConfigured ? <div className="notice">{supabaseConfigMessage}</div> : null}
@@ -92,7 +93,7 @@ export default function Login() {
 
           <form onSubmit={(event) => event.preventDefault()}>
             <label>
-              Email
+              E-mail
               <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required />
             </label>
             <label>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import EmptyState from '../components/EmptyState.jsx';
 import Loading from '../components/Loading.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import QuestionCard from '../components/QuestionCard.jsx';
 import { targetRole } from '../lib/targetRole.js';
 import { allDisciplinesValue, allTopicsValue, getQuestionFilterOptions, listQuestions } from '../services/questionService.js';
@@ -37,13 +38,12 @@ export default function Questoes() {
 
   useEffect(() => {
     let active = true;
-    const optionFilters = {
+    getQuestionFilterOptions({
       discipline: filters.discipline,
       topic: filters.topic,
       roleFocus: filters.roleFocus,
       includePendingReview: filters.includePendingReview,
-    };
-    getQuestionFilterOptions(optionFilters).then(({ data }) => {
+    }).then(({ data }) => {
       if (active) setFilterOptions(data);
     });
     return () => {
@@ -58,17 +58,21 @@ export default function Questoes() {
     });
   }
 
+  function clearFilters() {
+    setFilters(initialFilters);
+    loadQuestions(initialFilters);
+  }
+
   return (
     <section className="content-stack">
-      <header className="page-header">
-        <div>
-          <span className="eyebrow">Banco</span>
-          <h1>Banco de Questoes</h1>
-        </div>
-        {usingMock ? <span className="pill">Dados demonstrativos</span> : null}
-      </header>
+      <PageHeader
+        eyebrow="Banco"
+        title="Banco de Questões"
+        description="Filtre o essencial e pratique a partir de uma questão, disciplina ou prova."
+        action={usingMock ? <span className="pill">Dados demonstrativos</span> : null}
+      />
 
-      <form className="filters" onSubmit={(event) => { event.preventDefault(); loadQuestions(); }}>
+      <form className="filters compact-filter-card" onSubmit={(event) => { event.preventDefault(); loadQuestions(); }}>
         <label>
           Foco
           <select value={filters.roleFocus} onChange={(event) => updateFilter('roleFocus', event.target.value)}>
@@ -99,16 +103,17 @@ export default function Questoes() {
             ))}
           </select>
         </label>
-        <input placeholder="Banca" value={filters.board} onChange={(event) => updateFilter('board', event.target.value)} />
-        <input placeholder="Ano" value={filters.year} onChange={(event) => updateFilter('year', event.target.value)} />
-        <input placeholder="Prova/Cargo" value={filters.role} onChange={(event) => updateFilter('role', event.target.value)} />
+        <input aria-label="Banca" placeholder="Banca" value={filters.board} onChange={(event) => updateFilter('board', event.target.value)} />
+        <input aria-label="Ano" placeholder="Ano" value={filters.year} onChange={(event) => updateFilter('year', event.target.value)} />
+        <input aria-label="Prova ou cargo" placeholder="Prova/Cargo" value={filters.role} onChange={(event) => updateFilter('role', event.target.value)} />
         <button type="submit">Filtrar</button>
+        <button className="secondary-button" type="button" onClick={clearFilters}>Limpar filtros</button>
       </form>
 
-      <article className="notice">{filterOptions.count} questoes disponiveis para disciplina/assunto selecionados.</article>
+      <p className="muted">{filterOptions.count} questões disponíveis para os filtros selecionados.</p>
 
       {loading ? <Loading /> : null}
-      {!loading && !questions.length ? <EmptyState title="Nenhuma questao encontrada." description="Ajuste os filtros ou cadastre questoes no Admin." /> : null}
+      {!loading && !questions.length ? <EmptyState title="Nenhuma questão encontrada." description="Ajuste os filtros ou cadastre questões no Admin." /> : null}
       {!loading ? questions.map((question) => <QuestionCard key={question.id} question={question} />) : null}
     </section>
   );

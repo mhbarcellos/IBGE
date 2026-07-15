@@ -1,4 +1,5 @@
 import { Link, Navigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useAuth } from '../context/useAuth.js';
 import { targetRole, targetRoleLabel } from '../lib/targetRole.js';
 
@@ -9,11 +10,15 @@ export default function Landing() {
 
   return (
     <main className="landing-page">
+      <div className="public-topbar">
+        <strong>IBGE Estudos</strong>
+        <ThemeToggle compact />
+      </div>
       <section className="landing-hero">
         <div>
-          <span className="eyebrow">IBGE Estudos</span>
+          <span className="eyebrow">Plataforma de estudos</span>
           <h1>Estude para o IBGE com foco em {targetRole}</h1>
-          <p>Plataforma independente para praticar questões, revisar erros, montar simulados e acompanhar sua evolução em {targetRoleLabel}.</p>
+          <p>Pratique questões, revise erros, monte simulados e acompanhe sua evolução em {targetRoleLabel}.</p>
           <div className="button-row">
             <Link className="button-link" to="/login">Entrar</Link>
             <Link className="button-link secondary-link" to="/login">Criar conta</Link>
@@ -23,24 +28,20 @@ export default function Landing() {
 
       <section className="landing-benefits">
         <article>
-          <h2>Questões de provas do IBGE</h2>
-          <p>Treine com questões importadas e organizadas por disciplina, assunto, prova e foco.</p>
+          <h2>Questões do IBGE</h2>
+          <p>Treine por disciplina, assunto, prova e foco.</p>
         </article>
         <article>
-          <h2>Prática com feedback</h2>
-          <p>Responda alternativa por alternativa e veja a correção logo após a resposta.</p>
+          <h2>Feedback imediato</h2>
+          <p>Veja correção e comentário logo após responder.</p>
         </article>
         <article>
           <h2>Revisão de erros</h2>
-          <p>Volte às questões erradas para transformar tropeços em próximos acertos.</p>
+          <p>Volte ao que errou e consolide o aprendizado.</p>
         </article>
         <article>
           <h2>Simulados</h2>
-          <p>Monte treinos rápidos com foco ACA, cargos relacionados ou todas as questões.</p>
-        </article>
-        <article>
-          <h2>Desempenho individual</h2>
-          <p>Acompanhe acertos, erros e assuntos que precisam de reforço.</p>
+          <p>Monte treinos rápidos com foco ACA.</p>
         </article>
       </section>
 

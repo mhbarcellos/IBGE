@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AdminRoute from './components/AdminRoute.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import AdminQuestoes from './pages/AdminQuestoes.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Desempenho from './pages/Desempenho.jsx';
@@ -21,6 +22,7 @@ import RevisaoQuestoes from './pages/RevisaoQuestoes.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import Simulados from './pages/Simulados.jsx';
 import Trilha from './pages/Trilha.jsx';
+import { useTheme } from './hooks/useTheme.js';
 
 function AppShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,9 +31,12 @@ function AppShell({ children }) {
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
       <header className="mobile-app-header">
         <strong>IBGE Estudos</strong>
-        <button aria-label="Abrir menu" className="menu-toggle" type="button" onClick={() => setMenuOpen(true)}>
-          Menu
-        </button>
+        <div className="mobile-header-actions">
+          <ThemeToggle compact />
+          <button aria-label="Abrir menu" className="menu-toggle" type="button" onClick={() => setMenuOpen(true)}>
+            Menu
+          </button>
+        </div>
       </header>
       <button aria-label="Fechar menu" className="sidebar-backdrop" type="button" onClick={() => setMenuOpen(false)} />
       <Navbar onNavigate={() => setMenuOpen(false)} />
@@ -49,6 +54,8 @@ function ProtectedPage({ children }) {
 }
 
 export default function App() {
+  useTheme();
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
