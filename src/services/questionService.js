@@ -153,7 +153,10 @@ export async function listQuestions(filters = {}) {
 }
 
 export async function getQuestionFilterOptions(baseFilters = {}) {
-  const { data, error, usingMock } = await listQuestions({ includePendingReview: baseFilters.includePendingReview ?? false });
+  const { data, error, usingMock } = await listQuestions({
+    ...baseFilters,
+    includePendingReview: baseFilters.includePendingReview ?? false,
+  });
   const valid = data.filter((question) => (baseFilters.includePendingReview || (!question.needs_review && hasValidatedAnswer(question))));
   const disciplineSet = new Set(valid.map((question) => question.discipline || unclassifiedDiscipline));
   const selectedDiscipline = baseFilters.discipline || allDisciplinesValue;
