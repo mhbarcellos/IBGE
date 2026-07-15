@@ -16,8 +16,11 @@ import Perfil from './pages/Perfil.jsx';
 import Provas from './pages/Provas.jsx';
 import Questionario from './pages/Questionario.jsx';
 import Questoes from './pages/Questoes.jsx';
+import RevisaoErros from './pages/RevisaoErros.jsx';
 import RevisaoQuestoes from './pages/RevisaoQuestoes.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import Simulados from './pages/Simulados.jsx';
+import Trilha from './pages/Trilha.jsx';
 
 function AppShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,6 +83,30 @@ export default function App() {
         element={
           <ProtectedPage>
             <Questionario />
+          </ProtectedPage>
+        }
+      />
+      <Route
+        path="/trilha"
+        element={
+          <ProtectedPage>
+            <Trilha />
+          </ProtectedPage>
+        }
+      />
+      <Route
+        path="/simulados"
+        element={
+          <ProtectedPage>
+            <Simulados />
+          </ProtectedPage>
+        }
+      />
+      <Route
+        path="/revisao-erros"
+        element={
+          <ProtectedPage>
+            <RevisaoErros />
           </ProtectedPage>
         }
       />

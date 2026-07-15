@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { roleFocusLongLabels } from '../lib/targetRole.js';
 import { normalizeAlternatives } from '../services/questionService.js';
 
 const optionKeys = ['A', 'B', 'C', 'D', 'E'];
@@ -9,10 +11,12 @@ export default function QuestionCard({ question }) {
   const hasAnswer = optionKeys.includes(question.correct_answer);
   const explanationStatus = question.explanation_status || (question.explanation ? 'reviewed' : 'missing');
   const explanationLabel = {
-    missing: 'Sem explicacao',
-    auto_generated: 'Comentario automatico',
-    reviewed: 'Comentario revisado',
-  }[explanationStatus] || 'Sem explicacao';
+    missing: 'Sem explicação',
+    auto_generated: 'Comentário automático',
+    reviewed: 'Comentário revisado',
+  }[explanationStatus] || 'Sem explicação';
+  const roleFocus = question.role_focus || question.exams?.role_focus || 'unknown';
+  const practiceUrl = `/questionario?discipline=${encodeURIComponent(question.discipline || '')}&topic=${encodeURIComponent(question.topic || question.subject || '')}`;
 
   return (
     <article className="question-card">
@@ -24,10 +28,11 @@ export default function QuestionCard({ question }) {
         {question.exams?.year ? <span>{question.exams.year}</span> : null}
       </div>
       <div className="status-row">
-        {question.needs_review ? <span className="pill warning">Pendente de revisao</span> : <span className="pill success-pill">Revisada</span>}
+        {question.needs_review ? <span className="pill warning">Pendente de revisão</span> : <span className="pill success-pill">Revisada</span>}
         {!hasAnswer ? <span className="pill warning">Sem gabarito</span> : null}
         <span className={explanationStatus === 'reviewed' ? 'pill success-pill' : 'pill warning'}>{explanationLabel}</span>
-        {question.classification_status ? <span className="pill">Classificacao: {question.classification_status}</span> : null}
+        <span className="pill">{roleFocusLongLabels[roleFocus] || roleFocusLongLabels.unknown}</span>
+        {question.classification_status ? <span className="pill">Classificação: {question.classification_status}</span> : null}
         {question.source_name ? <span className="pill">Origem: {question.source_name}</span> : null}
       </div>
       <h3>{question.statement}</h3>
@@ -45,12 +50,15 @@ export default function QuestionCard({ question }) {
       {showAnswer ? (
         <div className="answer-box">
           <strong>{hasAnswer ? `Gabarito: ${question.correct_answer}` : 'Sem gabarito'}</strong>
-          {question.explanation ? <p>{question.explanation}</p> : null}
+          <p>{question.explanation || 'Ainda não há explicação revisada para esta questão.'}</p>
         </div>
       ) : null}
-      <button className="secondary-button" type="button" onClick={() => setShowAnswer((value) => !value)}>
-        {showAnswer ? 'Ocultar resposta' : 'Mostrar resposta'}
-      </button>
+      <div className="button-row">
+        <Link className="button-link secondary-link" to={practiceUrl}>Praticar este tema</Link>
+        <button className="secondary-button" type="button" onClick={() => setShowAnswer((value) => !value)}>
+          {showAnswer ? 'Ocultar detalhes' : 'Ver detalhes'}
+        </button>
+      </div>
     </article>
   );
 }

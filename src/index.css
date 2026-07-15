@@ -410,10 +410,52 @@ th {
 }
 
 .card-grid,
-.material-list {
+.material-list,
+.action-grid,
+.study-path-grid {
   display: grid;
   gap: var(--space-3);
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.study-path-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.focus-card,
+.study-path-card {
+  align-items: start;
+  background: linear-gradient(135deg, #ffffff 0%, #eef7fc 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.focus-card {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.focus-card h2 {
+  color: var(--color-primary-strong);
+  margin: 0.2rem 0;
+}
+
+.study-path-card {
+  align-content: space-between;
+}
+
+.wrong-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: var(--space-3) 0;
 }
 
 .data-card,
@@ -845,7 +887,8 @@ th {
 
   .filters,
   .form-grid,
-  .two-columns {
+  .two-columns,
+  .focus-card {
     grid-template-columns: 1fr;
   }
 

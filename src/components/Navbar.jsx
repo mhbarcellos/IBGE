@@ -7,6 +7,9 @@ const links = [
   { to: '/provas', label: 'Provas' },
   { to: '/questoes', label: 'Banco de Questões' },
   { to: '/questionario', label: 'Praticar' },
+  { to: '/trilha', label: 'Trilha de Estudos' },
+  { to: '/simulados', label: 'Simulados' },
+  { to: '/revisao-erros', label: 'Revisão de Erros' },
   { to: '/desempenho', label: 'Desempenho' },
   { to: '/materiais', label: 'Materiais' },
 ];
@@ -16,10 +19,10 @@ const accountLinks = [
 ];
 
 const adminLinks = [
-  { to: '/importacao-automatica', label: 'Importacao automatica' },
-  { to: '/importacoes', label: 'Historico de Importacoes' },
+  { to: '/importacao-automatica', label: 'Importação automática' },
+  { to: '/importacoes', label: 'Histórico de Importações' },
   { to: '/importar-pdf', label: 'Importar PDF' },
-  { to: '/revisao-questoes', label: 'Revisao' },
+  { to: '/revisao-questoes', label: 'Revisão' },
   { to: '/admin/questoes', label: 'Admin' },
 ];
 

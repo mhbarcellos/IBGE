@@ -57,9 +57,15 @@ export async function listAttempts(userId) {
 
   return supabase
     .from('question_attempts')
-    .select('*, questions(id, discipline, subject, statement, correct_answer)')
+    .select('*, questions(id, discipline, subject, topic, statement, alternatives, correct_answer, explanation, explanation_status, exams(id, title, year, board, role, role_focus))')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
+}
+
+export async function listWrongAttempts(userId) {
+  const { data, error } = await listAttempts(userId);
+  if (error) return { data: [], error };
+  return { data: (data ?? []).filter((attempt) => !attempt.is_correct), error: null };
 }
 
 export async function getPerformanceSummary(userId) {

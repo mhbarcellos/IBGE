@@ -38,6 +38,9 @@ Sem Supabase configurado, use o botao `Entrar em modo demonstração` para naveg
 ```bash
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
 VITE_SUPABASE_ANON_KEY=sua-anon-key
+VITE_TARGET_ROLE=ACA
+VITE_TARGET_ROLE_LABEL=Agente Censitário Administrativo
+TARGET_EXAM_ROLE=ACA
 SEED_USER_EMAIL=email-do-usuario-criado-no-app
 SEED_USER_PASSWORD=senha-do-usuario-criado-no-app
 ADMIN_USER_EMAIL=email-do-primeiro-admin
@@ -45,6 +48,65 @@ ADMIN_USER_EMAIL=email-do-primeiro-admin
 
 Nao use `service_role` no frontend.
 `SEED_USER_EMAIL` e `SEED_USER_PASSWORD` sao usados somente pelos scripts locais de seed e devem corresponder a um usuario real criado pelo proprio app.
+
+## Foco de estudo: ACA
+
+O cargo-alvo padrão da plataforma é `ACA`, ou seja, Agente Censitário Administrativo.
+
+No frontend, essas variáveis podem ser ajustadas no `.env` e no Netlify:
+
+```bash
+VITE_TARGET_ROLE=ACA
+VITE_TARGET_ROLE_LABEL=Agente Censitário Administrativo
+```
+
+Nos scripts locais, `TARGET_EXAM_ROLE=ACA` também é aceito. Se as variáveis não existirem, o app usa `ACA` e `Agente Censitário Administrativo` como padrão.
+
+Para habilitar as colunas de foco no banco, execute no SQL Editor:
+
+```sql
+-- Cole e execute o conteudo de:
+-- supabase/phase8_target_role_focus.sql
+```
+
+Depois de importar provas ou questões, rode:
+
+```bash
+npm run questions:classify-role
+```
+
+Esse script marca provas e questões como:
+
+- `target`: ACA.
+- `related`: cargos censitários próximos, como ACI, ACM e ACS.
+- `other`: outros cargos do IBGE, como APM, SCQ e recenseador.
+- `unknown`: sem informação suficiente.
+
+As questões de APM, SCQ e outros cargos não são apagadas. Elas continuam disponíveis como treino complementar, mas o Dashboard, o Questionário, o Banco de Questões, Provas e Materiais passam a priorizar ACA.
+
+## Fase 9: trilha, revisão de erros e simulados
+
+Para habilitar persistência de simulados no Supabase, execute no SQL Editor:
+
+```sql
+-- Cole e execute o conteudo de:
+-- supabase/phase9_study_features.sql
+```
+
+Essa migração cria:
+
+- `simulated_exams`
+- `simulated_exam_questions`
+
+As policies de RLS garantem que cada usuário veja e altere somente os próprios simulados. A revisão de erros usa `question_attempts`, que também permanece privada por usuário.
+
+Novas rotas de estudo:
+
+- `/trilha`: organiza os próximos passos por disciplina e mostra questões disponíveis, acertos e taxa de acerto.
+- `/revisao-erros`: lista questões que o usuário errou, com filtros por disciplina, assunto e prova.
+- `/simulados`: cria treinos rápidos de 10, 20, 30 ou 60 questões, com foco ACA, ACA + relacionados ou todas.
+
+No modo demonstração, essas telas funcionam com dados locais.
 
 ## Multiusuario e papeis
 
@@ -230,9 +292,19 @@ Antes de importar, execute no SQL Editor:
 -- supabase/phase4_pci_pdf_question_pipeline.sql
 -- supabase/phase5_auto_ibge_importer.sql
 -- supabase/phase5_exam_file_formats.sql
+-- supabase/phase8_target_role_focus.sql
+-- supabase/phase9_study_features.sql
 ```
 
 Os importadores automaticos usam paginas oficiais especificas conhecidas das bancas e do IBGE, em vez de paginas genericas de concursos. O crawler e controlado: ele le a pagina oficial, segue no maximo um nivel de pagina candidata e nunca tenta contornar CAPTCHA, Turnstile, login, paywall ou JavaScript protegido.
+
+Para ACA, a fonte oficial inicial priorizada é a página FGV 2017:
+
+```text
+https://conhecimento.fgv.br/concursos/ibge-pss/1pss
+```
+
+O importador procura primeiro provas e gabaritos com sinais de Agente Censitário Administrativo, ACA, IBGE PSS 2017, 1PSS e FGV 2017. Depois considera cargos censitários relacionados e deixa outros cargos com prioridade menor.
 
 O sistema procura arquivos diretos de prova e gabarito nestes formatos:
 
@@ -290,6 +362,8 @@ Diagnostico:
 ```bash
 npm run ibge:check
 ```
+
+O `ibge:check` mostra também as contagens de provas ACA, provas relacionadas, questões ACA, questões relacionadas, questões outras e questões sem classificação.
 
 O sistema importa automaticamente o que for publico e acessivel. Fontes com CAPTCHA, Turnstile, login, paywall ou JavaScript bloqueante nao sao burladas; PDFs protegidos sao pulados e registrados no relatorio. Editais, comunicados, resultados, convocacoes e cronogramas nao devem entrar como conteudo de estudo. Questoes sem gabarito ou com parse incerto vao para `/revisao-questoes`; o questionario usa apenas questoes validas com gabarito.
 

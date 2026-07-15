@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { getMatchedRoleAlias, getRoleFocusLevel, targetRole } from '../../../src/lib/targetRole.js';
 import { createSupabaseSeedClient } from '../../utils/supabaseSeedClient.mjs';
 import {
   delay,
@@ -48,6 +49,7 @@ function extractExamRows(html, pageUrl) {
       .replace(/prova(s)?|quest(oes|oes)|download|pdf/gi, '')
       .trim();
     if (!role || /^ibge\s*-\s*\d+$/i.test(role)) return;
+    const roleFocusText = `${role} ${label} ${url} ${rowText}`;
 
     exams.set(url, {
       title: normalizeWhitespace(`IBGE${year ? ` ${year}` : ''} - ${role}${board ? ` - ${board}` : ''}`),
@@ -55,6 +57,9 @@ function extractExamRows(html, pageUrl) {
       board,
       role,
       organization: 'IBGE',
+      role_focus: getRoleFocusLevel(roleFocusText),
+      target_role: targetRole,
+      role_alias_matched: getMatchedRoleAlias(roleFocusText) || null,
       source_name: pciSourceName,
       source_page_url: url,
       source_url: url,

@@ -1,10 +1,13 @@
 export const mockExams = [
   {
     id: 'mock-exam-1',
-    title: 'IBGE - Agente de Pesquisas e Mapeamento',
-    year: 2023,
+    title: 'IBGE - Agente Censitário Administrativo',
+    year: 2017,
     board: 'FGV',
-    role: 'Agente',
+    role: 'Agente Censitário Administrativo',
+    role_focus: 'target',
+    target_role: 'ACA',
+    role_alias_matched: 'agente censitário administrativo',
     source_url: 'https://www.ibge.gov.br/',
   },
 ];
@@ -29,6 +32,8 @@ export const mockQuestions = [
     explanation: 'A ideia central resume o eixo de sentido do texto, nao apenas um detalhe.',
     explanation_status: 'reviewed',
     difficulty: 'facil',
+    role_focus: 'target',
+    target_role: 'ACA',
     exams: mockExams[0],
   },
   {
@@ -50,6 +55,8 @@ export const mockQuestions = [
     explanation: '10% de 200 e 20; 200 + 20 = 220.',
     explanation_status: 'reviewed',
     difficulty: 'facil',
+    role_focus: 'target',
+    target_role: 'ACA',
     exams: mockExams[0],
   },
 ];
@@ -60,6 +67,8 @@ export const mockMaterials = [
     discipline: 'Geografia',
     subject: 'Populacao brasileira',
     title: 'Resumo de indicadores demograficos',
+    target_role: 'ACA',
+    role_focus: 'target',
     content:
       'Revise conceitos de taxa de natalidade, mortalidade, crescimento vegetativo, migracao e distribuicao populacional.',
   },

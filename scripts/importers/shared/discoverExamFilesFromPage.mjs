@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { getRoleFocusLevel } from '../../../src/lib/targetRole.js';
 import { fetchWithTimeout } from './fetchWithTimeout.mjs';
 import {
   detectFileExtensionFromUrl,
@@ -18,6 +19,7 @@ const allowedHosts = new Set([
   'www.ibge.gov.br',
   'ibge.gov.br',
 ]);
+const focusPriority = { target: 0, related: 1, other: 2, unknown: 3 };
 
 function normalizeWhitespace(value = '') {
   return value.replace(/\s+/g, ' ').trim();
@@ -174,6 +176,7 @@ export async function discoverExamFilesFromPage({ url, sourceName, board, year, 
       }
 
       logger.log(`Arquivo aceito: ${relevance.fileType} - ${link.title} - ${relevance.reason}`);
+      const roleFocus = getRoleFocusLevel(`${link.title} ${link.url} ${link.sourcePageUrl} ${roleHint || ''} ${sourceName || ''}`);
       files.push({
         file_type: relevance.fileType,
         title: link.title,
@@ -184,6 +187,7 @@ export async function discoverExamFilesFromPage({ url, sourceName, board, year, 
         is_processable: isProcessableForText(fileExtension),
         relevance_reason: relevance.reason,
         relevance_confidence: relevance.confidence,
+        role_focus: roleFocus,
         source_name: sourceName,
         board,
         year,
@@ -192,5 +196,8 @@ export async function discoverExamFilesFromPage({ url, sourceName, board, year, 
     }
   }
 
-  return { files, ignoredLinks };
+  return {
+    files: files.sort((a, b) => (focusPriority[a.role_focus] ?? 9) - (focusPriority[b.role_focus] ?? 9)),
+    ignoredLinks,
+  };
 }

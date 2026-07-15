@@ -1,4 +1,5 @@
 import { createSupabaseSeedClient } from '../../utils/supabaseSeedClient.mjs';
+import { targetRole } from '../../../src/lib/targetRole.js';
 import { classifyExamFileRelevance } from '../shared/fileValidation.mjs';
 
 const supabase = await createSupabaseSeedClient();
@@ -51,8 +52,15 @@ await count('Candidatas', 'question_parse_candidates');
 await count('Questoes importadas', 'questions');
 await count('Questoes disponiveis no questionario', 'questions', (query) => query.eq('needs_review', false).not('correct_answer', 'is', null));
 await count('Questoes pendentes de revisao', 'questions', (query) => query.eq('needs_review', true));
+console.log(`Foco de cargo (${targetRole}):`);
+await count('Provas ACA', 'exams', (query) => query.eq('role_focus', 'target'));
+await count('Provas relacionadas', 'exams', (query) => query.eq('role_focus', 'related'));
+await count('Questoes ACA', 'questions', (query) => query.eq('role_focus', 'target'));
+await count('Questoes relacionadas', 'questions', (query) => query.eq('role_focus', 'related'));
+await count('Questoes outras', 'questions', (query) => query.eq('role_focus', 'other'));
+await count('Questoes sem classificacao', 'questions', (query) => query.eq('role_focus', 'unknown'));
 
-const exams = await selectRows('Provas por source_name', 'exams', 'id, source_name');
+const exams = await selectRows('Provas por source_name', 'exams', 'id, title, source_name');
 const files = await selectRows('Arquivos por source_name', 'exam_files', 'id, exam_id, source_name, file_type, title, url, file_extension, status, processing_status, is_processable');
 const texts = await selectRows('Textos por tipo', 'exam_file_texts', 'exam_file_id, extraction_status');
 
@@ -78,6 +86,15 @@ for (const [sourceName, examIds] of fileIdsBySource.entries()) {
   examsWithFilesBySource.set(sourceName, [...examIds].filter(Boolean).length);
 }
 printMap('Provas com arquivos por source_name:', examsWithFilesBySource);
+const examIdsWithFiles = new Set(files.map((file) => file.exam_id).filter(Boolean));
+const examsWithoutFiles = exams.filter((exam) => !examIdsWithFiles.has(exam.id));
+console.log(`Provas sem arquivo: ${examsWithoutFiles.length}`);
+if (examsWithoutFiles.length) {
+  console.log('Exemplos de provas sem arquivo:');
+  for (const exam of examsWithoutFiles.slice(0, 10)) {
+    console.log(`- [${exam.source_name || 'sem fonte'}] ${exam.title || exam.id}`);
+  }
+}
 printMap('Arquivos por extensao:', filesByExtension);
 printMap('Arquivos baixados por extensao:', downloadedByExtension);
 
@@ -137,6 +154,13 @@ if (error) {
   console.log(`Relatorios por fonte: indisponivel (${error.message})`);
 } else {
   console.log('Ultimos relatorios por fonte:');
+  const sourcesWithoutFiles = (reports ?? [])
+    .filter((report) => Number(report.pdfs_found || 0) === 0)
+    .map((report) => report.source_name || 'sem fonte');
+  if (sourcesWithoutFiles.length) {
+    console.log('Fontes que nao retornaram arquivo nos ultimos relatorios:');
+    for (const sourceName of [...new Set(sourcesWithoutFiles)]) console.log(`- ${sourceName}`);
+  }
   for (const report of reports ?? []) {
     console.log(`- ${report.source_name} [${report.run_type}/${report.status}] provas=${report.exams_found}/${report.exams_imported} arquivos=${report.pdfs_found} baixados=${report.pdfs_downloaded} ignorados=${report.pdfs_blocked} candidatas=${report.questions_candidates} importadas=${report.questions_imported} revisao=${report.questions_needing_review}${report.message ? ` erro=${report.message}` : ''}`);
   }

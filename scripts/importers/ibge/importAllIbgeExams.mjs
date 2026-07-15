@@ -194,7 +194,10 @@ try {
 reports.push(pipelineReport);
 await saveImportReport(supabase, pipelineReport, 'pipeline', pipelineReport.errors.length ? 'finished_with_errors' : 'finished');
 
-console.log('Etapa 7: verificacao final.');
+console.log('Etapa 7: classificacao de foco ACA.');
+await runNpmScript('questions:classify-role');
+
+console.log('Etapa 8: verificacao final.');
 await runNpmScript('ibge:check');
 
 console.log('Resumo final');

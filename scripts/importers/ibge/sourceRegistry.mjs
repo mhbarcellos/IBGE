@@ -9,8 +9,9 @@ export const ibgeSources = [
   {
     name: 'FGV IBGE',
     type: 'official_board',
-    url: 'https://conhecimento.fgv.br/concursos/pssibge25',
+    url: 'https://conhecimento.fgv.br/concursos/ibge-pss/1pss',
     canDownloadPdfs: true,
+    notes: 'Fonte oficial FGV 2017 relacionada a ACA.',
   },
   {
     name: 'IBFC IBGE',

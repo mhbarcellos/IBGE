@@ -6,6 +6,12 @@ export const ibgeSources = [
     notes: 'Pagina oficial do IBGE para acompanhar processos seletivos e concursos.',
   },
   {
+    name: 'FGV IBGE 2017 ACA',
+    url: 'https://conhecimento.fgv.br/concursos/ibge-pss/1pss',
+    source_type: 'banca',
+    notes: 'Pagina oficial FGV 2017 relacionada ao cargo Agente Censitario Administrativo.',
+  },
+  {
     name: 'FGV IBGE 2025',
     url: 'https://conhecimento.fgv.br/concursos/pssibge25',
     source_type: 'banca',

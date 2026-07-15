@@ -11,6 +11,9 @@ create table if not exists public.exams (
   source_page_url text,
   organization text,
   external_id text,
+  role_focus text default 'unknown' check (role_focus in ('target', 'related', 'other', 'unknown')),
+  target_role text,
+  role_alias_matched text,
   imported_at timestamp with time zone,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now()
@@ -41,6 +44,8 @@ create table if not exists public.questions (
   classification_status text default 'unclassified',
   classification_source text,
   classification_updated_at timestamp with time zone,
+  role_focus text default 'unknown' check (role_focus in ('target', 'related', 'other', 'unknown')),
+  target_role text,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now()
 );
@@ -49,6 +54,9 @@ alter table public.exams add column if not exists source_name text;
 alter table public.exams add column if not exists source_page_url text;
 alter table public.exams add column if not exists organization text;
 alter table public.exams add column if not exists external_id text;
+alter table public.exams add column if not exists role_focus text default 'unknown';
+alter table public.exams add column if not exists target_role text;
+alter table public.exams add column if not exists role_alias_matched text;
 alter table public.exams add column if not exists imported_at timestamp with time zone;
 alter table public.questions add column if not exists source_name text;
 alter table public.questions add column if not exists source_page_url text;
@@ -60,6 +68,8 @@ alter table public.questions add column if not exists topic text;
 alter table public.questions add column if not exists classification_status text default 'unclassified';
 alter table public.questions add column if not exists classification_source text;
 alter table public.questions add column if not exists classification_updated_at timestamp with time zone;
+alter table public.questions add column if not exists role_focus text default 'unknown';
+alter table public.questions add column if not exists target_role text;
 alter table public.questions add column if not exists explanation_status text default 'missing';
 alter table public.questions add column if not exists explanation_source text;
 alter table public.questions add column if not exists explanation_updated_at timestamp with time zone;
@@ -123,11 +133,15 @@ create table if not exists public.study_materials (
   topic text,
   title text not null,
   content text not null,
+  target_role text,
+  role_focus text default 'unknown' check (role_focus in ('target', 'related', 'other', 'unknown')),
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now()
 );
 
 alter table public.study_materials add column if not exists topic text;
+alter table public.study_materials add column if not exists target_role text;
+alter table public.study_materials add column if not exists role_focus text default 'unknown';
 
 create table if not exists public.import_sources (
   id uuid primary key default gen_random_uuid(),
@@ -299,6 +313,29 @@ create table if not exists public.import_run_reports (
   created_at timestamp with time zone default now()
 );
 
+create table if not exists public.simulated_exams (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  title text,
+  focus text,
+  total_questions integer,
+  correct_count integer default 0,
+  wrong_count integer default 0,
+  started_at timestamp with time zone default now(),
+  finished_at timestamp with time zone,
+  created_at timestamp with time zone default now()
+);
+
+create table if not exists public.simulated_exam_questions (
+  id uuid primary key default gen_random_uuid(),
+  simulated_exam_id uuid references public.simulated_exams(id) on delete cascade,
+  question_id uuid references public.questions(id) on delete cascade,
+  question_order integer,
+  selected_answer text,
+  is_correct boolean,
+  answered_at timestamp with time zone
+);
+
 alter table public.exams enable row level security;
 alter table public.questions enable row level security;
 alter table public.study_sessions enable row level security;
@@ -316,6 +353,8 @@ alter table public.exam_file_texts enable row level security;
 alter table public.question_import_logs enable row level security;
 alter table public.question_parse_candidates enable row level security;
 alter table public.import_run_reports enable row level security;
+alter table public.simulated_exams enable row level security;
+alter table public.simulated_exam_questions enable row level security;
 
 create or replace function public.get_my_role()
 returns text
@@ -613,6 +652,91 @@ on public.question_attempts for delete
 to authenticated
 using (auth.uid() = user_id);
 
+drop policy if exists "Users can read own simulated exams" on public.simulated_exams;
+create policy "Users can read own simulated exams"
+on public.simulated_exams for select
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "Users can create own simulated exams" on public.simulated_exams;
+create policy "Users can create own simulated exams"
+on public.simulated_exams for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own simulated exams" on public.simulated_exams;
+create policy "Users can update own simulated exams"
+on public.simulated_exams for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own simulated exams" on public.simulated_exams;
+create policy "Users can delete own simulated exams"
+on public.simulated_exams for delete
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "Users can read own simulated exam questions" on public.simulated_exam_questions;
+create policy "Users can read own simulated exam questions"
+on public.simulated_exam_questions for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.simulated_exams se
+    where se.id = simulated_exam_id
+      and se.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can create own simulated exam questions" on public.simulated_exam_questions;
+create policy "Users can create own simulated exam questions"
+on public.simulated_exam_questions for insert
+to authenticated
+with check (
+  exists (
+    select 1
+    from public.simulated_exams se
+    where se.id = simulated_exam_id
+      and se.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can update own simulated exam questions" on public.simulated_exam_questions;
+create policy "Users can update own simulated exam questions"
+on public.simulated_exam_questions for update
+to authenticated
+using (
+  exists (
+    select 1
+    from public.simulated_exams se
+    where se.id = simulated_exam_id
+      and se.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.simulated_exams se
+    where se.id = simulated_exam_id
+      and se.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can delete own simulated exam questions" on public.simulated_exam_questions;
+create policy "Users can delete own simulated exam questions"
+on public.simulated_exam_questions for delete
+to authenticated
+using (
+  exists (
+    select 1
+    from public.simulated_exams se
+    where se.id = simulated_exam_id
+      and se.user_id = auth.uid()
+  )
+);
+
 drop policy if exists "Users can read own question flags" on public.question_flags;
 create policy "Users can read own question flags"
 on public.question_flags for select
@@ -655,10 +779,16 @@ create index if not exists idx_questions_exam_id on public.questions(exam_id);
 create index if not exists idx_questions_filters on public.questions(discipline, subject);
 create index if not exists idx_questions_discipline_topic on public.questions(discipline, topic);
 create index if not exists idx_questions_classification_status on public.questions(classification_status);
+create index if not exists idx_questions_role_focus on public.questions(role_focus);
+create index if not exists idx_questions_target_role on public.questions(target_role);
 create index if not exists idx_profiles_role on public.profiles(role);
 create index if not exists idx_profiles_email on public.profiles(email);
 create index if not exists idx_attempts_user_id on public.question_attempts(user_id);
 create index if not exists idx_attempts_question_id on public.question_attempts(question_id);
+create index if not exists idx_simulated_exams_user_id on public.simulated_exams(user_id);
+create index if not exists idx_simulated_exams_created_at on public.simulated_exams(created_at);
+create index if not exists idx_simulated_exam_questions_exam_id on public.simulated_exam_questions(simulated_exam_id);
+create index if not exists idx_simulated_exam_questions_question_id on public.simulated_exam_questions(question_id);
 create index if not exists idx_flags_user_id on public.question_flags(user_id);
 create unique index if not exists idx_question_option_explanations_unique on public.question_option_explanations(question_id, option_key);
 create index if not exists idx_question_option_explanations_question_id on public.question_option_explanations(question_id);
@@ -672,6 +802,8 @@ create unique index if not exists idx_exam_files_exam_url_unique on public.exam_
 create index if not exists idx_import_jobs_source_id on public.import_jobs(source_id);
 create index if not exists idx_question_import_reviews_question_id on public.question_import_reviews(question_id);
 create index if not exists idx_study_materials_subject_topic_title on public.study_materials(subject, topic, title);
+create index if not exists idx_study_materials_role_focus on public.study_materials(role_focus);
+create index if not exists idx_study_materials_target_role on public.study_materials(target_role);
 create unique index if not exists idx_import_discovered_files_url_unique on public.import_discovered_files(url);
 create index if not exists idx_import_discovered_files_source_id on public.import_discovered_files(source_id);
 create index if not exists idx_import_discovered_files_exam_id on public.import_discovered_files(exam_id);
@@ -687,6 +819,8 @@ create index if not exists idx_exam_file_texts_extraction_status on public.exam_
 create index if not exists idx_exams_source_name on public.exams(source_name);
 create index if not exists idx_exams_source_page_url on public.exams(source_page_url);
 create index if not exists idx_exams_year_board_role on public.exams(year, board, role);
+create index if not exists idx_exams_role_focus on public.exams(role_focus);
+create index if not exists idx_exams_target_role on public.exams(target_role);
 create index if not exists idx_questions_source_name on public.questions(source_name);
 create index if not exists idx_questions_source_page_url on public.questions(source_page_url);
 create index if not exists idx_questions_source_question_id on public.questions(source_question_id);

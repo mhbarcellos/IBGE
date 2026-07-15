@@ -13,6 +13,7 @@
     "seed:materials": "node scripts/seedMaterials.mjs",
     "check:supabase": "node scripts/checkSupabase.mjs",
     "questions:classify": "node scripts/classification/classifyImportedQuestions.mjs",
+    "questions:classify-role": "node scripts/classification/classifyTargetRoleFocus.mjs",
     "users:set-admin": "node scripts/users/setAdminUser.mjs",
     "seed:all": "npm run seed:sources && npm run seed:exams && npm run seed:materials && npm run check:supabase",
     "import:discover": "node scripts/importers/discoverPdfLinks.mjs",

@@ -1,4 +1,5 @@
 import { initialExams } from '../src/data/initialExams.js';
+import { getMatchedRoleAlias, getRoleFocusLevel, targetRole } from '../src/lib/targetRole.js';
 import { createSupabaseSeedClient } from './utils/supabaseSeedClient.mjs';
 
 const supabase = await createSupabaseSeedClient();
@@ -7,6 +8,13 @@ let inserted = 0;
 let existing = 0;
 
 for (const exam of initialExams) {
+  const roleText = `${exam.title} ${exam.role || ''} ${exam.source_url || ''} ${exam.source_page_url || ''}`;
+  const payload = {
+    ...exam,
+    role_focus: exam.role_focus || getRoleFocusLevel(roleText),
+    target_role: exam.target_role || targetRole,
+    role_alias_matched: exam.role_alias_matched || getMatchedRoleAlias(roleText) || null,
+  };
   let query = supabase
     .from('exams')
     .select('id')
@@ -28,7 +36,7 @@ for (const exam of initialExams) {
     continue;
   }
 
-  const { error } = await supabase.from('exams').insert(exam);
+  const { error } = await supabase.from('exams').insert(payload);
   if (error) {
     console.error(`Erro ao inserir prova ${exam.title}: ${error.message}`);
     process.exitCode = 1;

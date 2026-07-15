@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import { useAuth } from '../context/useAuth.js';
+import { targetRole } from '../lib/targetRole.js';
 import {
   allDisciplinesValue,
   allTopicsValue,
@@ -28,7 +30,15 @@ function explanationLabel(status) {
 
 export default function Questionario() {
   const { user } = useAuth();
-  const [filters, setFilters] = useState({ discipline: allDisciplinesValue, topic: allTopicsValue, limit: 5, includePendingReview: false });
+  const [searchParams] = useSearchParams();
+  const initialFocus = searchParams.get('focus') || 'target';
+  const [filters, setFilters] = useState({
+    discipline: searchParams.get('discipline') || allDisciplinesValue,
+    topic: searchParams.get('topic') || allTopicsValue,
+    limit: Number(searchParams.get('limit') || 5),
+    includePendingReview: false,
+    focusMode: initialFocus,
+  });
   const [filterOptions, setFilterOptions] = useState({ disciplines: [allDisciplinesValue], topics: [allTopicsValue], count: 0 });
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,6 +48,7 @@ export default function Questionario() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [focusNotice, setFocusNotice] = useState('');
 
   const current = questions[currentIndex];
   const finished = questions.length > 0 && currentIndex >= questions.length;
@@ -52,6 +63,7 @@ export default function Questionario() {
       discipline: filters.discipline,
       topic: filters.topic,
       includePendingReview: filters.includePendingReview,
+      focusMode: filters.focusMode,
     };
     getQuestionFilterOptions(optionFilters).then(({ data }) => {
       if (active) setFilterOptions(data);
@@ -59,7 +71,27 @@ export default function Questionario() {
     return () => {
       active = false;
     };
-  }, [filters.discipline, filters.topic, filters.includePendingReview]);
+  }, [filters.discipline, filters.topic, filters.includePendingReview, filters.focusMode]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      getQuestionFilterOptions({ includePendingReview: false, focusMode: 'target' }),
+      getQuestionFilterOptions({ includePendingReview: false, focusMode: 'target_related' }),
+    ]).then(([targetResult, relatedResult]) => {
+      if (!active) return;
+      if ((targetResult.data?.count ?? 0) > 0) {
+        setFilters((currentFilters) => ({ ...currentFilters, focusMode: initialFocus }));
+        setFocusNotice('');
+      } else if ((relatedResult.data?.count ?? 0) > 0 && initialFocus === 'target') {
+        setFilters((currentFilters) => ({ ...currentFilters, focusMode: 'target_related' }));
+        setFocusNotice(`Ainda há poucas questões específicas de ${targetRole}. Usando questões relacionadas como complemento.`);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [initialFocus]);
 
   function updateFilter(name, value) {
     setFilters((currentFilters) => {
@@ -127,6 +159,14 @@ export default function Questionario() {
 
       <form className="filters" onSubmit={startTraining}>
         <label>
+          Foco da prática
+          <select value={filters.focusMode} onChange={(event) => updateFilter('focusMode', event.target.value)}>
+            <option value="target">Somente {targetRole}</option>
+            <option value="target_related">{targetRole} + cargos relacionados</option>
+            <option value="all">Todas as questões</option>
+          </select>
+        </label>
+        <label>
           Disciplina
           <select value={filters.discipline} onChange={(event) => updateFilter('discipline', event.target.value)}>
             {filterOptions.disciplines.map((discipline) => (
@@ -160,6 +200,8 @@ export default function Questionario() {
         </label>
         <button disabled={loading || filterOptions.count === 0} type="submit">{loading ? 'Buscando...' : 'Comecar'}</button>
       </form>
+
+      {focusNotice ? <article className="notice">{focusNotice}</article> : null}
 
       <article className={filterOptions.count ? 'notice' : 'error'}>
         {filterOptions.count

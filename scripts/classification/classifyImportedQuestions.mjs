@@ -1,4 +1,5 @@
 import { createSupabaseSeedClient } from '../utils/supabaseSeedClient.mjs';
+import { getRoleFocusLevel, targetRole } from '../../src/lib/targetRole.js';
 
 const unclassifiedDiscipline = 'Nao classificada';
 const unclassifiedTopic = 'Nao classificado';
@@ -88,11 +89,20 @@ function classify(question) {
   };
 }
 
+function classifyRoleFocus(question) {
+  return getRoleFocusLevel([
+    question.source_name,
+    question.source_page_url,
+    question.import_notes,
+    question.statement,
+  ].filter(Boolean).join(' '));
+}
+
 const supabase = await createSupabaseSeedClient();
 
 const { data, error } = await supabase
   .from('questions')
-  .select('id, statement, alternatives, discipline, subject, topic, classification_status')
+  .select('id, statement, alternatives, discipline, subject, topic, classification_status, source_name, source_page_url, import_notes')
   .order('created_at', { ascending: false });
 
 if (error) throw error;
@@ -102,11 +112,18 @@ let classified = 0;
 let unclassified = 0;
 const byDiscipline = new Map();
 const byTopic = new Map();
+const byFocus = new Map();
 
 for (const question of data ?? []) {
-  if (!isEmptyClassification(question)) continue;
+  const shouldClassifyDiscipline = isEmptyClassification(question);
+  if (!shouldClassifyDiscipline) continue;
   analyzed += 1;
-  const payload = classify(question);
+  const roleFocus = classifyRoleFocus(question);
+  const payload = {
+    ...classify(question),
+    role_focus: roleFocus,
+    target_role: targetRole,
+  };
   const { error: updateError } = await supabase.from('questions').update(payload).eq('id', question.id);
   if (updateError) throw updateError;
 
@@ -115,6 +132,7 @@ for (const question of data ?? []) {
 
   byDiscipline.set(payload.discipline, (byDiscipline.get(payload.discipline) || 0) + 1);
   byTopic.set(payload.topic, (byTopic.get(payload.topic) || 0) + 1);
+  byFocus.set(payload.role_focus, (byFocus.get(payload.role_focus) || 0) + 1);
 }
 
 console.log('Classificacao de questoes importadas');
@@ -125,4 +143,6 @@ console.log('Por disciplina:');
 for (const [discipline, total] of [...byDiscipline.entries()].sort()) console.log(`- ${discipline}: ${total}`);
 console.log('Por assunto:');
 for (const [topic, total] of [...byTopic.entries()].sort()) console.log(`- ${topic}: ${total}`);
+console.log('Por foco ACA/relacionadas/outras:');
+for (const [focus, total] of [...byFocus.entries()].sort()) console.log(`- ${focus}: ${total}`);
 console.log('Finalizado.');

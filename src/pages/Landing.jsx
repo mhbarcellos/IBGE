@@ -1,5 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth.js';
+import { targetRole, targetRoleLabel } from '../lib/targetRole.js';
 
 export default function Landing() {
   const { session, loading } = useAuth();
@@ -11,8 +12,8 @@ export default function Landing() {
       <section className="landing-hero">
         <div>
           <span className="eyebrow">IBGE Estudos</span>
-          <h1>IBGE Estudos</h1>
-          <p>Plataforma de treino com questoes de concursos do IBGE.</p>
+          <h1>Estude para o IBGE com foco em {targetRole}</h1>
+          <p>Plataforma independente para praticar questões, revisar erros, montar simulados e acompanhar sua evolução em {targetRoleLabel}.</p>
           <div className="button-row">
             <Link className="button-link" to="/login">Entrar</Link>
             <Link className="button-link secondary-link" to="/login">Criar conta</Link>
@@ -22,38 +23,29 @@ export default function Landing() {
 
       <section className="landing-benefits">
         <article>
-          <h2>Banco de questoes</h2>
-          <p>Consulte questoes importadas e organizadas para estudo.</p>
+          <h2>Questões de provas do IBGE</h2>
+          <p>Treine com questões importadas e organizadas por disciplina, assunto, prova e foco.</p>
         </article>
         <article>
-          <h2>Pratica com feedback</h2>
-          <p>Responda alternativa por alternativa e veja a correcao na hora.</p>
+          <h2>Prática com feedback</h2>
+          <p>Responda alternativa por alternativa e veja a correção logo após a resposta.</p>
+        </article>
+        <article>
+          <h2>Revisão de erros</h2>
+          <p>Volte às questões erradas para transformar tropeços em próximos acertos.</p>
+        </article>
+        <article>
+          <h2>Simulados</h2>
+          <p>Monte treinos rápidos com foco ACA, cargos relacionados ou todas as questões.</p>
         </article>
         <article>
           <h2>Desempenho individual</h2>
-          <p>Acompanhe acertos, erros e assuntos que precisam de reforco.</p>
-        </article>
-        <article>
-          <h2>Provas oficiais</h2>
-          <p>Use questões importadas de provas oficiais quando disponíveis.</p>
+          <p>Acompanhe acertos, erros e assuntos que precisam de reforço.</p>
         </article>
       </section>
-      <section className="landing-benefits">
-        <article>
-          <h2>Como funciona</h2>
-          <p>Crie sua conta, escolha uma disciplina, pratique questões e acompanhe seu desempenho ao longo do tempo.</p>
-        </article>
-        <article>
-          <h2>Estudo individual</h2>
-          <p>Cada usuário tem histórico, acertos e erros separados. Seu desempenho é privado.</p>
-        </article>
-        <article>
-          <h2>Curadoria</h2>
-          <p>Administradores revisam importações, questões e materiais para manter o banco organizado.</p>
-        </article>
-      </section>
+
       <footer className="public-footer">
-        IBGE Estudos. Plataforma independente de estudos. Não é site oficial do IBGE. {new Date().getFullYear()}
+        Plataforma independente de estudos. Não é site oficial do IBGE. {new Date().getFullYear()}
       </footer>
     </main>
   );

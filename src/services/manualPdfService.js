@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient.js';
+import { getMatchedRoleAlias, getRoleFocusLevel, targetRole } from '../lib/targetRole.js';
 import { isDemoMode } from './demoMode.js';
 
 const defaultSourceName = 'Importação manual';
@@ -55,12 +56,16 @@ export async function registerManualPdfPair(form) {
   }
 
   const sourceName = form.sourceName || defaultSourceName;
+  const roleText = `${form.title} ${form.role || ''} ${form.sourcePageUrl || ''} ${form.proofPdfUrl || ''}`;
   const examPayload = {
     title: form.title,
     year: numberOrNull(form.year),
     board: form.board || null,
     role: form.role || null,
     organization: form.organization || null,
+    role_focus: getRoleFocusLevel(roleText),
+    target_role: targetRole,
+    role_alias_matched: getMatchedRoleAlias(roleText) || null,
     source_name: sourceName,
     source_page_url: form.sourcePageUrl || null,
     source_url: form.sourcePageUrl || form.proofPdfUrl,

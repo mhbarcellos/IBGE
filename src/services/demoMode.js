@@ -2,6 +2,7 @@ import { mockQuestions } from './mockData.js';
 
 export const demoModeKey = 'ibge_demo_mode';
 const demoAttemptsKey = 'ibge_demo_attempts';
+const demoSimulatedExamsKey = 'ibge_demo_simulated_exams';
 
 export const demoUser = {
   id: 'demo-user',
@@ -31,7 +32,35 @@ export function disableDemoMode() {
   if (canUseStorage()) {
     window.localStorage.removeItem(demoModeKey);
     window.localStorage.removeItem(demoAttemptsKey);
+    window.localStorage.removeItem(demoSimulatedExamsKey);
   }
+}
+
+export function getDemoSimulatedExams() {
+  if (!canUseStorage()) return [];
+
+  const stored = window.localStorage.getItem(demoSimulatedExamsKey);
+  if (!stored) return [];
+
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
+export function saveDemoSimulatedExam(payload) {
+  if (!canUseStorage()) return null;
+
+  const exam = {
+    id: crypto.randomUUID(),
+    created_at: new Date().toISOString(),
+    started_at: new Date().toISOString(),
+    ...payload,
+  };
+  const exams = [exam, ...getDemoSimulatedExams()];
+  window.localStorage.setItem(demoSimulatedExamsKey, JSON.stringify(exams));
+  return exam;
 }
 
 export function getDemoAttempts() {

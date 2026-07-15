@@ -66,6 +66,15 @@ const relevantTerms = [
   'cartao resposta',
 ];
 
+const targetRoleTerms = [
+  'agente censitario administrativo',
+  'agente censitário administrativo',
+  'aca',
+  'ibge pss 2017',
+  '1pss',
+  'fgv 2017',
+];
+
 function normalizeText(value = '') {
   return value
     .toString()
@@ -121,6 +130,7 @@ export function isIgnoredAdministrativeFile({ url = '', title = '' }) {
 
 export function hasRelevantExamFileTerm({ url = '', title = '' }) {
   const text = normalizeText(`${title} ${url}`);
+  if (includesAny(text, targetRoleTerms)) return true;
   const hasCardSignal = text.includes('cartao resposta') || text.includes('cartao-resposta');
   if (hasCardSignal) return text.includes('prova') || text.includes('gabarito') || text.includes('resposta');
   return relevantTerms.some((term) => hasPhrase(text, term));
@@ -138,6 +148,7 @@ export function classifyExamFileRelevance({ title = '', url = '', sourcePageUrl 
   const fullText = `${text} ${context}`;
   const hasPdfSignal = /\.pdf(?:$|[?#])/i.test(url) || detectFileExtensionFromUrl(url) === 'pdf';
   const hasExamContext = /(concurso|prova|caderno|apm|scq|ibge|pss|objetiva)/i.test(fullText);
+  const hasTargetRoleContext = includesAny(fullText, targetRoleTerms);
 
   if (hasPhrase(text, 'gabarito') || hasPhrase(text, 'gabaritos')) {
     return {
@@ -154,6 +165,15 @@ export function classifyExamFileRelevance({ title = '', url = '', sourcePageUrl 
       fileType: null,
       reason: 'arquivo administrativo ou resultado, nao e prova/gabarito',
       confidence: 0.95,
+    };
+  }
+
+  if (hasTargetRoleContext && hasPdfSignal && /(prova|caderno|tipo|objetiva|gabarito|resposta|aca|1pss)/i.test(fullText)) {
+    return {
+      isRelevant: true,
+      fileType: inferExamFileType({ url, title }),
+      reason: 'arquivo relacionado ao foco ACA detectado',
+      confidence: 0.9,
     };
   }
 
@@ -183,7 +203,7 @@ export function classifyExamFileRelevance({ title = '', url = '', sourcePageUrl 
     };
   }
 
-  if ((hasPhrase(text, 'supervisor de coleta e qualidade') || hasPhrase(text, 'agente de pesquisas e mapeamento')) && hasPdfSignal && /(prova|caderno|tipo|objetiva|apm|scq)/i.test(fullText)) {
+  if ((hasPhrase(text, 'supervisor de coleta e qualidade') || hasPhrase(text, 'agente de pesquisas e mapeamento') || hasPhrase(text, 'agente censitario administrativo')) && hasPdfSignal && /(prova|caderno|tipo|objetiva|apm|scq|aca)/i.test(fullText)) {
     return {
       isRelevant: true,
       fileType: 'prova',

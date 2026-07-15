@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import EmptyState from '../components/EmptyState.jsx';
 import Loading from '../components/Loading.jsx';
+import { roleFocusLabels } from '../lib/targetRole.js';
 import { listExams } from '../services/examService.js';
 
 export default function Provas() {
@@ -33,6 +34,9 @@ export default function Provas() {
       <div className="card-grid">
         {exams.map((exam) => (
           <article className="data-card" key={exam.id}>
+            <div className="status-row">
+              <span className="pill">{roleFocusLabels[exam.role_focus || 'unknown']}</span>
+            </div>
             <h3>{exam.title}</h3>
             <dl>
               <div><dt>Ano</dt><dd>{exam.year || '-'}</dd></div>

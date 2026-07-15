@@ -2,6 +2,14 @@ export const knownOfficialPages = [
   {
     sourceName: 'FGV IBGE',
     board: 'FGV',
+    year: 2017,
+    roleHint: 'Agente Censitário Administrativo',
+    url: 'https://conhecimento.fgv.br/concursos/ibge-pss/1pss',
+    sourceType: 'official_exam_page',
+  },
+  {
+    sourceName: 'FGV IBGE',
+    board: 'FGV',
     year: 2025,
     roleHint: 'Processo Seletivo Simplificado IBGE 2025',
     url: 'https://conhecimento.fgv.br/concursos/pssibge25',

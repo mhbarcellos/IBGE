@@ -1,5 +1,13 @@
 export const initialExams = [
   {
+    title: 'IBGE 2017 - Agente Censitario Administrativo',
+    year: 2017,
+    board: 'FGV',
+    role: 'Agente Censitario Administrativo',
+    source_url: 'https://conhecimento.fgv.br/concursos/ibge-pss/1pss',
+    source_page_url: 'https://conhecimento.fgv.br/concursos/ibge-pss/1pss',
+  },
+  {
     title: 'IBGE 2025 - Agente de Pesquisas e Mapeamento',
     year: 2025,
     board: 'FGV',

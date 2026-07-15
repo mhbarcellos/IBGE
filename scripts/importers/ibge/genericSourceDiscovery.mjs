@@ -1,4 +1,5 @@
 import { createEmptyStats } from '../shared/importReport.mjs';
+import { getMatchedRoleAlias, getRoleFocusLevel, targetRole } from '../../../src/lib/targetRole.js';
 import { discoverExamFilesFromPage } from '../shared/discoverExamFilesFromPage.mjs';
 import { upsertExam, upsertExamFile } from '../shared/saveExamFiles.mjs';
 
@@ -18,12 +19,22 @@ function readPositiveInt(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function roleFocusForPage(page, source) {
+  return getRoleFocusLevel(`${page.roleHint || ''} ${page.url || ''} ${source.name || ''} ${source.board || ''}`);
+}
+
 export async function discoverSource({ supabase, source, limits = {}, logger = console }) {
   const stats = createEmptyStats(source.name);
   stats.startedAt = new Date().toISOString();
   const maxOfficialPages = readPositiveInt(process.env.IBGE_MAX_OFFICIAL_PAGES, limits.maxOfficialPages ?? 10);
   const maxExamFiles = readPositiveInt(process.env.IBGE_MAX_EXAM_FILES, limits.maxExamFiles ?? 20);
-  const pages = (source.pages ?? []).slice(0, maxOfficialPages);
+  const pages = (source.pages ?? [])
+    .map((page) => ({ ...page, role_focus: roleFocusForPage(page, source) }))
+    .sort((a, b) => {
+      const priority = { target: 0, related: 1, other: 2, unknown: 3 };
+      return (priority[a.role_focus] ?? 9) - (priority[b.role_focus] ?? 9);
+    })
+    .slice(0, maxOfficialPages);
 
   logger.log(`Iniciando fonte: ${source.name}`);
   if (!pages.length) {
@@ -74,6 +85,9 @@ export async function discoverSource({ supabase, source, limits = {}, logger = c
         board: page.board || source.board,
         role: page.roleHint || 'Prova IBGE',
         organization: 'IBGE',
+        role_focus: page.role_focus || 'unknown',
+        target_role: targetRole,
+        role_alias_matched: getMatchedRoleAlias(`${page.roleHint || ''} ${page.url || ''}`) || null,
         source_name: source.name,
         source_page_url: page.url,
         source_url: page.url,

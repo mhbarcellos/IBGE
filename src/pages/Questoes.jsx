@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import EmptyState from '../components/EmptyState.jsx';
 import Loading from '../components/Loading.jsx';
 import QuestionCard from '../components/QuestionCard.jsx';
+import { targetRole } from '../lib/targetRole.js';
 import { allDisciplinesValue, allTopicsValue, getQuestionFilterOptions, listQuestions } from '../services/questionService.js';
 
 const initialFilters = {
@@ -10,6 +11,7 @@ const initialFilters = {
   board: '',
   year: '',
   role: '',
+  roleFocus: 'all',
   includePendingReview: true,
 };
 
@@ -38,6 +40,7 @@ export default function Questoes() {
     const optionFilters = {
       discipline: filters.discipline,
       topic: filters.topic,
+      roleFocus: filters.roleFocus,
       includePendingReview: filters.includePendingReview,
     };
     getQuestionFilterOptions(optionFilters).then(({ data }) => {
@@ -46,7 +49,7 @@ export default function Questoes() {
     return () => {
       active = false;
     };
-  }, [filters.discipline, filters.topic, filters.includePendingReview]);
+  }, [filters.discipline, filters.topic, filters.roleFocus, filters.includePendingReview]);
 
   function updateFilter(name, value) {
     setFilters((current) => {
@@ -66,6 +69,16 @@ export default function Questoes() {
       </header>
 
       <form className="filters" onSubmit={(event) => { event.preventDefault(); loadQuestions(); }}>
+        <label>
+          Foco
+          <select value={filters.roleFocus} onChange={(event) => updateFilter('roleFocus', event.target.value)}>
+            <option value="target">{targetRole}</option>
+            <option value="related">Relacionadas</option>
+            <option value="other">Outras</option>
+            <option value="unknown">Sem classificação</option>
+            <option value="all">Todas</option>
+          </select>
+        </label>
         <label>
           Disciplina
           <select value={filters.discipline} onChange={(event) => updateFilter('discipline', event.target.value)}>

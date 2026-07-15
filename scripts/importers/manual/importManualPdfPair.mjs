@@ -1,4 +1,5 @@
 import { createSupabaseSeedClient } from '../../utils/supabaseSeedClient.mjs';
+import { getMatchedRoleAlias, getRoleFocusLevel, targetRole } from '../../../src/lib/targetRole.js';
 import { getEnvValue, getManualSourceName, loadEnvFile, requireManualEnv } from './manualUtils.mjs';
 
 function numberOrNull(value) {
@@ -50,6 +51,12 @@ const env = loadEnvFile();
 requireManualEnv(env, ['MANUAL_EXAM_TITLE', 'MANUAL_PROVA_PDF_URL']);
 const supabase = await createSupabaseSeedClient();
 const sourceName = getManualSourceName(env);
+const roleText = [
+  getEnvValue(env, 'MANUAL_EXAM_TITLE'),
+  getEnvValue(env, 'MANUAL_EXAM_ROLE'),
+  getEnvValue(env, 'MANUAL_SOURCE_PAGE_URL'),
+  getEnvValue(env, 'MANUAL_PROVA_PDF_URL'),
+].filter(Boolean).join(' ');
 
 const examPayload = {
   title: getEnvValue(env, 'MANUAL_EXAM_TITLE'),
@@ -57,6 +64,9 @@ const examPayload = {
   board: getEnvValue(env, 'MANUAL_EXAM_BOARD') || null,
   role: getEnvValue(env, 'MANUAL_EXAM_ROLE') || null,
   organization: getEnvValue(env, 'MANUAL_EXAM_ORGANIZATION') || null,
+  role_focus: getRoleFocusLevel(roleText),
+  target_role: targetRole,
+  role_alias_matched: getMatchedRoleAlias(roleText) || null,
   source_name: sourceName,
   source_page_url: getEnvValue(env, 'MANUAL_SOURCE_PAGE_URL') || null,
   source_url: getEnvValue(env, 'MANUAL_SOURCE_PAGE_URL') || getEnvValue(env, 'MANUAL_PROVA_PDF_URL'),

@@ -1,4 +1,5 @@
 import { initialStudyMaterials } from '../src/data/initialStudyMaterials.js';
+import { targetRole } from '../src/lib/targetRole.js';
 import { createSupabaseSeedClient, isMissingSchemaError, logPhase2Required } from './utils/supabaseSeedClient.mjs';
 
 const supabase = await createSupabaseSeedClient();
@@ -8,6 +9,12 @@ let existing = 0;
 let skipped = false;
 
 for (const material of initialStudyMaterials) {
+  const payload = {
+    ...material,
+    target_role: material.target_role || targetRole,
+    role_focus: material.role_focus || 'target',
+  };
+
   const current = await supabase
     .from('study_materials')
     .select('id')
@@ -33,7 +40,7 @@ for (const material of initialStudyMaterials) {
     continue;
   }
 
-  const { error } = await supabase.from('study_materials').insert(material);
+  const { error } = await supabase.from('study_materials').insert(payload);
   if (error) {
     if (isMissingSchemaError(error)) {
       logPhase2Required(error);
